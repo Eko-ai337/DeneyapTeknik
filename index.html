@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<title>Deneyap Kart - Teknik Bilgi Platformu</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root[data-theme="dark"] {
+    --bg:#0b0e17;
+    --panel:rgba(24,30,45,.52);
+    --panel2:rgba(32,40,58,.48);
+    --panel3:rgba(15,20,32,.55);
+    --border:rgba(255,255,255,.09);
+    --border-soft:rgba(255,255,255,.05);
+    --text:#eef1f8;
+    --muted:#8b93ab;
+    --accent:#e8863a;
+    --accent2:#c25f14;
+    --accent-soft:rgba(232,134,58,.12);
+    --danger:#f0645f;
+    --success:#3ec98a;
+    --warn:#f0b93d;
+    --shadow:0 8px 32px -8px rgba(0,0,0,.55);
+    --shadow-sm:0 2px 12px -2px rgba(0,0,0,.45);
+    --glass-highlight:rgba(255,255,255,.06);
+  }
+  :root[data-theme="light"] {
+    --bg:#eef1f8;
+    --panel:rgba(255,255,255,.55);
+    --panel2:rgba(255,255,255,.45);
+    --panel3:rgba(255,255,255,.4);
+    --border:rgba(255,255,255,.7);
+    --border-soft:rgba(255,255,255,.5);
+    --text:#171b2b;
+    --muted:#636b85;
+    --accent:#d9701f;
+    --accent2:#b85714;
+    --accent-soft:rgba(217,112,31,.10);
+    --danger:#d8433d;
+    --success:#1f9d67;
+    --warn:#b8790a;
+    --shadow:0 8px 32px -10px rgba(30,35,60,.20);
+    --shadow-sm:0 2px 12px -4px rgba(30,35,60,.14);
+    --glass-highlight:rgba(255,255,255,.5);
+  }
+
+  *{box-sizing:border-box;transition:background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .15s ease;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    padding:0;
+    -webkit-font-smoothing:antialiased;
+    letter-spacing:-0.01em;
+    overflow-x:hidden;
+    position:relative;
+  }
+  .liquid-blob{position:fixed;border-radius:50%;filter:blur(100px);z-index:0;pointer-events:none;}
+  .liquid-blob.b1{width:560px;height:560px;top:-160px;left:-140px;background:radial-gradient(circle,var(--accent) 0%,transparent 70%);opacity:.35;}
+  .liquid-blob.b2{width:520px;height:520px;bottom:-180px;right:-120px;background:radial-gradient(circle,var(--accent2) 0%,transparent 70%);opacity:.3;}
+  .liquid-blob.b3{width:420px;height:420px;top:35%;right:8%;background:radial-gradient(circle,var(--success) 0%,transparent 70%);opacity:.14;}
+  ::selection{background:var(--accent);color:#fff;}
+  .wrap{position:relative;z-index:1;width:100%;max-width:1520px;margin:0;padding:32px clamp(20px,4vw,64px) 64px;}
+
+  /* ---- Site switcher (üst şerit) ---- */
+  .site-switcher{
+    display:flex;background:var(--panel);padding:5px;border-radius:12px;
+    border:1px solid var(--border);margin-bottom:22px;gap:5px;box-shadow:var(--shadow-sm);
+    max-width:520px;backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
+  }
+  .site-btn{
+    flex:1;text-align:center;padding:11px;border-radius:9px;font-size:13px;
+    text-decoration:none;font-weight:600;letter-spacing:0;
+  }
+  .site-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 14px -4px rgba(232,134,58,.5);}
+  .site-btn.passive{background:transparent;color:var(--muted);border:1px solid transparent;}
+  .site-btn.passive:hover{border-color:var(--border);color:var(--text);background:var(--panel2);}
+
+  /* ---- Header ---- */
+  header{
+    display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;
+    background:var(--panel);padding:18px 22px;border-radius:16px;border:1px solid var(--border);
+    box-shadow:var(--shadow-sm);backdrop-filter:blur(20px) saturate(170%);-webkit-backdrop-filter:blur(20px) saturate(170%);
+  }
+  .logo-area{display:flex;align-items:center;gap:16px;}
+  .logo-text h1{font-size:19px;margin:0;letter-spacing:-.02em;color:var(--text);font-weight:800;}
+  .logo-text p{font-size:10.5px;margin:3px 0 0;color:var(--accent);font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+
+  .controls{display:flex;gap:10px;align-items:center;}
+  .theme-btn{
+    background:var(--panel2);border:1px solid var(--border);color:var(--text);
+    padding:9px 14px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:500;
+    backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);
+  }
+  .theme-btn:hover{border-color:var(--accent);background:var(--accent-soft);}
+  .tag{
+    font-size:10.5px;color:var(--muted);border:1px solid var(--border);
+    padding:5px 10px;border-radius:20px;font-weight:600;letter-spacing:.03em;
+    background:var(--panel2);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);
+  }
+
+  /* ---- Nav ---- */
+  nav{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+  nav button{
+    background:var(--panel);border:1px solid var(--border);color:var(--muted);
+    padding:10px 18px;border-radius:11px;cursor:pointer;font-size:13px;font-weight:600;
+    box-shadow:var(--shadow-sm);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);
+  }
+  nav button:hover{color:var(--text);border-color:var(--accent);}
+  nav button.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;box-shadow:0 4px 14px -4px rgba(232,134,58,.5);}
+
+  /* ---- Filtre çubuğu ---- */
+  .filter-bar{
+    display:flex;gap:8px;margin-bottom:18px;background:var(--panel);
+    padding:12px;border-radius:12px;border:1px solid var(--border);overflow-x:auto;
+    box-shadow:var(--shadow-sm);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);
+  }
+  .filter-btn{
+    background:var(--panel2);border:1px solid var(--border);color:var(--text);
+    padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12.5px;white-space:nowrap;font-weight:500;
+  }
+  .filter-btn:hover{border-color:var(--accent);}
+  .filter-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;font-weight:700;}
+
+  /* ---- Panel ---- */
+  .panel{
+    background:var(--panel);border:1px solid var(--border);border-radius:16px;
+    padding:24px;margin-bottom:18px;box-shadow:var(--shadow-sm);
+    backdrop-filter:blur(22px) saturate(170%);-webkit-backdrop-filter:blur(22px) saturate(170%);
+  }
+  .panel h2{margin-top:0;font-size:17px;font-weight:700;letter-spacing:-.01em;}
+
+  label{display:block;font-size:11.5px;color:var(--muted);margin:14px 0 6px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;}
+  input[type=text],input[type=password],select,textarea{
+    width:100%;background:var(--panel3);border:1px solid var(--border);border-radius:10px;
+    padding:11px 13px;color:var(--text);font-size:14px;outline:none;font-family:inherit;
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  }
+  input[type=text]:focus,input[type=password]:focus,select:focus,textarea:focus{
+    border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);
+  }
+  textarea{resize:vertical;min-height:100px;line-height:1.5;}
+
+  .checkrow{display:flex;align-items:center;gap:9px;margin-top:16px;}
+  .checkrow input{width:17px;height:17px;margin:0;accent-color:var(--accent);}
+  .checkrow label{margin:0;cursor:pointer;text-transform:none;font-size:13px;font-weight:500;color:var(--text);}
+
+  button.btn{
+    margin-top:18px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;
+    padding:12px 20px;border-radius:10px;font-size:14px;cursor:pointer;font-weight:700;
+    box-shadow:0 6px 16px -6px rgba(232,134,58,.55);letter-spacing:-.01em;
+  }
+  button.btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px -6px rgba(232,134,58,.65);}
+  button.btn:active{transform:translateY(0);}
+
+  .msg{margin-top:14px;font-size:13px;padding:11px 14px;border-radius:10px;display:none;font-weight:500;}
+  .msg.error{background:rgba(240,100,95,.1);color:var(--danger);display:block;border:1px solid rgba(240,100,95,.25);}
+  .msg.success{background:rgba(62,201,138,.1);color:var(--success);display:block;border:1px solid rgba(62,201,138,.25);}
+  .hidden{display:none !important;}
+
+  /* ---- Post kartları ---- */
+  .post{
+    border:1px solid var(--border);background:var(--panel2);border-radius:14px;
+    padding:18px 20px;margin-bottom:12px;position:relative;box-shadow:var(--shadow-sm);
+    backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
+  }
+  .post:hover{border-color:var(--border-soft);box-shadow:var(--shadow);}
+  .post-header{cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .post-header h3{margin:0;font-size:15.5px;color:var(--text);display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.01em;}
+  .post-header h3::before{content:"▶";font-size:10px;color:var(--accent);transition:transform .2s;}
+  .post.open .post-header h3::before{transform:rotate(90deg);}
+
+  .post .meta{display:flex;gap:10px;font-size:11px;color:var(--muted);align-items:center;font-weight:500;}
+  .post .board-tag{
+    background:var(--accent-soft);color:var(--accent);padding:3px 9px;border-radius:6px;
+    font-weight:700;letter-spacing:.02em;font-size:10.5px;
+  }
+
+  .post-body{display:none;margin-top:16px;border-top:1px solid var(--border);padding-top:14px;}
+  .post.open .post-body{display:block;}
+
+  .post pre{
+    background:var(--panel3);padding:14px;border-radius:10px;border:1px solid var(--border);
+    overflow-x:auto;font-size:12.5px;margin:10px 0 0;font-family:'JetBrains Mono',monospace;
+    color:var(--success);line-height:1.6;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  }
+  .post p{margin:0;font-size:14px;line-height:1.6;white-space:pre-wrap;color:var(--text);}
+
+  .comments-section{margin-top:16px;background:var(--panel3);padding:14px;border-radius:10px;border:1px solid var(--border);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}
+  .comments-section h4{margin:0 0 8px 0;font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+  .comment-item{border-bottom:1px solid var(--border);padding:7px 0;font-size:13px;display:flex;justify-content:space-between;align-items:center;}
+  .comment-meta{font-size:10px;color:var(--muted);margin-bottom:2px;}
+  .comment-form{display:flex;gap:6px;margin-top:10px;}
+  .comment-form input{margin:0;padding:8px 11px;font-size:13px;}
+
+  .mod-actions{position:absolute;right:18px;top:14px;display:flex;gap:6px;}
+  .mod-btn{
+    background:rgba(240,100,95,.1);color:var(--danger);border:1px solid rgba(240,100,95,.35);
+    padding:5px 10px;border-radius:7px;font-size:11px;cursor:pointer;font-weight:600;
+  }
+  .mod-btn:hover{background:rgba(240,100,95,.18);}
+  .ban-btn{background:rgba(240,185,61,.1);color:var(--warn);border:1px solid rgba(240,185,61,.35);}
+  .ban-btn:hover{background:rgba(240,185,61,.18);}
+
+  .who{
+    display:flex;justify-content:space-between;align-items:center;background:var(--panel);
+    border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:18px;
+    font-size:13px;box-shadow:var(--shadow-sm);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
+  }
+  .who .role{
+    font-size:10.5px;padding:3px 10px;border-radius:20px;background:var(--accent-soft);
+    color:var(--accent);font-weight:700;letter-spacing:.03em;
+  }
+  .who button{
+    background:var(--panel2);border:1px solid var(--border);color:var(--text);
+    padding:7px 14px;border-radius:8px;cursor:pointer;font-weight:500;font-size:12.5px;
+  }
+  .who button:hover{border-color:var(--danger);color:var(--danger);}
+  #tab-login, #tab-signup{max-width:480px;}
+
+  #postsList{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px;align-items:start;}
+  #postsList .post{margin-bottom:0;}
+
+  .gatebox{
+    background:var(--panel);border:1.5px dashed var(--border);border-radius:18px;
+    padding:56px 32px;text-align:center;box-shadow:var(--shadow-sm);
+    backdrop-filter:blur(22px) saturate(170%);-webkit-backdrop-filter:blur(22px) saturate(170%);
+  }
+  .gatebox .gate-icon{font-size:34px;margin-bottom:14px;}
+  .gatebox h3{color:var(--text);font-size:18px;margin:0 0 8px;font-weight:700;}
+  .gatebox p{margin:0 auto 20px;font-size:13.5px;color:var(--muted);max-width:420px;line-height:1.6;}
+  .gatebox .gate-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+  .gatebox .gate-actions button{
+    background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;
+    padding:10px 20px;border-radius:10px;font-size:13.5px;cursor:pointer;font-weight:700;
+  }
+  .gatebox .gate-actions button.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--border);}
+
+  .empty{color:var(--muted);font-size:13px;text-align:center;padding:36px 0;}
+</style>
+</head>
+<body>
+<div class="liquid-blob b1"></div>
+<div class="liquid-blob b2"></div>
+<div class="liquid-blob b3"></div>
+<div class="wrap">
+  <div class="site-switcher">
+    <a href="https://www.deneyapkart.com" class="site-btn active">📚 Teknik Site</a>
+    <a href="https://eko-ai337.github.io/forum/" class="site-btn passive">💬 Forum Sayfası ➔</a>
+  </div>
+ 
+ 
+  
+
+  <header>
+    <div class="logo-area">
+      <svg width="45" height="45" viewBox="0 0 100 100" style="fill:none; stroke:#e67e22; stroke-width:4;">
+        <path d="M50 5 L90 20 L90 60 L50 95 L10 60 L10 20 Z" fill="#171b2e"/>
+        <rect x="38" y="38" width="24" height="24" rx="4" stroke="#e67e22" stroke-width="3"/>
+        <path d="M45 44 L55 44 M45 50 L55 50 M45 56 L52 56" stroke="#e67e22" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <div class="logo-text">
+        <h1>DENEYAP KART</h1>
+        <p>TEKNİK BİLGİ SİTESİ</p>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="theme-btn" id="themeToggle">☀️ / 🌙</button>
+      <span class="tag" id="statusTag">bağlanılıyor…</span>
+    </div>
+  </header>
+
+  <div id="appArea" class="hidden">
+    <nav id="mainNav">
+      <button data-tab="projeniz" class="active">📚 Bilgi Bankası</button>
+      <button data-tab="login">Giriş Yap</button>
+      <button data-tab="signup">Kayıt Ol</button>
+    </nav>
+
+    <div id="whoBar" class="who hidden">
+      <div>Giriş yapan: <strong id="whoName"></strong> <span class="role" id="whoRole"></span></div>
+      <button id="logoutBtn">Çıkış yap</button>
+    </div>
+
+    <div class="panel tab hidden" id="tab-login">
+      <h2>Hesabına Giriş Yap</h2>
+      <label>Kullanıcı adı</label>
+      <input type="text" id="loginUser" placeholder="kullanıcı adı">
+      <label>Şifre</label>
+      <input type="password" id="loginPass" placeholder="şifre">
+      <button class="btn" id="loginBtn">Giriş yap</button>
+      <div class="msg" id="loginMsg"></div>
+    </div>
+
+    <div class="panel tab hidden" id="tab-signup">
+      <h2>Yeni Hesap Oluştur</h2>
+      <label>Kullanıcı adı</label>
+      <input type="text" id="suUser" placeholder="kullanıcı adı">
+      <label>Şifre</label>
+      <input type="password" id="suPass" placeholder="şifre">
+      
+      <div class="checkrow">
+        <input type="checkbox" id="suAdminCheck">
+        <label for="suAdminCheck">Admin yetkisi talep et</label>
+      </div>
+      <div id="suAdminCodeWrap" class="hidden">
+        <label>Yönetici (Admin) Kodu</label>
+        <input type="password" id="suAdminCode" placeholder="Yönetici kodunu girin">
+      </div>
+
+      <button class="btn" id="signupBtn">Hesap oluştur</button>
+      <div class="msg" id="signupMsg"></div>
+    </div>
+
+    <div class="panel tab" id="tab-projeniz">
+      <div id="adminPostBox" class="hidden" style="border: 2px dashed var(--accent); padding:15px; border-radius:10px; margin-bottom:20px;">
+        <h2>⚙️ Yeni Teknik Paylaşım (Sadece Admin)</h2>
+        <label>Proje / Konu Başlığı</label>
+        <input type="text" id="postTitle" placeholder="Örn: Deneyap Kart Bağlantı Şeması">
+        <label>Kategori</label>
+        <select id="postBoard">
+          <option value="Deneyap Kart">Deneyap Kart</option>
+          <option value="Arduino">Arduino</option>
+          <option value="ESP32">ESP32</option>
+          <option value="Diğer">Diğer / Genel</option>
+        </select>
+        <label>Açıklama Detayları</label>
+        <textarea id="postContent" placeholder="Detayları buraya yazın..."></textarea>
+        <label>Kod Blokları (İsteğe Bağlı)</label>
+        <textarea id="postCode" placeholder="// Kodlarınızı buraya yapıştırın..." style="min-height:120px; color:#5fd9a0; font-family: monospace;"></textarea>
+        <button class="btn" id="postBtn">Yayınla</button>
+        <div class="msg" id="postMsg"></div>
+      </div>
+
+      <div id="lockedNote" class="msg" style="display:block;background:rgba(230,126,34,.1);color:var(--accent);">
+        ⚠️ Bu sitede sadece <strong>Adminler</strong> teknik paylaşım yapabilir. Üyeler içeriklere yorum yazabilir.
+      </div>
+
+      <div id="memberGate" class="gatebox hidden">
+        <div class="gate-icon">🔒</div>
+        <h3>İçerikler yalnızca üyelere açık</h3>
+        <p>Paylaşılan teknik bilgileri, şemaları ve kodları görüntüleyebilmek için giriş yapmalı ya da ücretsiz bir hesap oluşturmalısınız.</p>
+        <div class="gate-actions">
+          <button onclick="showTab('login')">Giriş Yap</button>
+          <button class="secondary" onclick="showTab('signup')">Hesap Oluştur</button>
+        </div>
+      </div>
+
+      <div id="memberContentArea" class="hidden">
+        <h2>📚 Paylaşılan Teknik Bilgiler</h2>
+        <div class="filter-bar">
+          <button class="filter-btn active" data-filter="Tümü">Tümü</button>
+          <button class="filter-btn" data-filter="Deneyap Kart">Deneyap Kart</button>
+          <button class="filter-btn" data-filter="Arduino">Arduino</button>
+          <button class="filter-btn" data-filter="ESP32">ESP32</button>
+          <button class="filter-btn" data-filter="Diğer">Diğer</button>
+        </div>
+
+        <!-- İçerik kısmı: Burada 'comments-section' veya yorum listeleme yok -->
+        <div id="postsList"></div>
+      </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://bppwlyqugapaexnnflrb.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwcHdseXF1Z2FwYWV4bm5mbHJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0MjYxNzIsImV4cCI6MjA5OTAwMjE3Mn0.yKa0V2Q3dykHM44BTr60ibkWBDyavf87Yeb31r8HK1s";
+
+let sb = null;
+let currentUser = null;
+let currentFilter = "Tümü";
+let openProjectIds = new Set(); 
+
+const savedUser = localStorage.getItem('dt_user');
+if(savedUser) { currentUser = JSON.parse(savedUser); }
+
+document.getElementById('themeToggle').addEventListener('click', () => {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  document.documentElement.setAttribute('data-theme', currentTheme === 'dark' ? 'light' : 'dark');
+});
+
+function showTab(name){
+  document.querySelectorAll('.tab').forEach(el => el.classList.add('hidden'));
+  document.getElementById('tab-'+name).classList.remove('hidden');
+}
+document.querySelectorAll('#mainNav button').forEach(b=> b.addEventListener('click', ()=>showTab(b.dataset.tab)));
+document.getElementById('suAdminCheck').addEventListener('change', (e)=> {
+  document.getElementById('suAdminCodeWrap').classList.toggle('hidden', !e.target.checked);
+});
+
+function flash(elId, text, ok){
+  const el = document.getElementById(elId); el.textContent = text;
+  el.className = 'msg ' + (ok ? 'success' : 'error');
+}
+function escapeHtml(s){
+  if(!s) return "";
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function connectSupabase(){
+  try{
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    document.getElementById('statusTag').textContent = 'bağlı';
+    document.getElementById('appArea').classList.remove('hidden');
+    updateWhoBar();
+
+    sb.channel('public:projects_and_comments')
+      .on('postgres_changes', { event: '*', pattern: 'public', table: 'projects' }, async () => { await refreshPosts(); })
+      .on('postgres_changes', { event: '*', pattern: 'public', table: 'comments' }, async () => { await refreshPosts(); })
+      .subscribe();
+
+  }catch(e){ document.getElementById('statusTag').textContent = 'hata'; }
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', async (e) => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    currentFilter = e.target.dataset.filter;
+    await refreshPosts();
+  });
+});
+
+function toggleProjectView(id) {
+  const postEl = document.getElementById(`project-card-${id}`);
+  if(openProjectIds.has(id)) {
+    openProjectIds.delete(id); postEl.classList.remove('open');
+  } else {
+    openProjectIds.add(id); postEl.classList.add('open');
+  }
+}
+
+async function refreshPosts(){
+  let { data: projects } = await sb.from('projects').select('*').order('created_at', {ascending:false});
+  
+  const list = document.getElementById('postsList');
+  if(!projects) { list.innerHTML = '<div class="empty">Yüklenemedi.</div>'; return; }
+  
+  if(currentFilter !== "Tümü") { projects = projects.filter(p => p.board === currentFilter); }
+  if(projects.length === 0){ list.innerHTML = '<div class="empty">Bu kategoride içerik bulunamadı.</div>'; return; }
+
+  const isAdmin = currentUser && currentUser.isAdmin;
+
+  list.innerHTML = projects.map(p => {
+    const isOpen = openProjectIds.has(String(p.id)) || openProjectIds.has(Number(p.id));
+
+    return `
+      <div class="post ${isOpen ? 'open' : ''}" id="project-card-${p.id}">
+        <div class="post-header" onclick="toggleProjectView('${p.id}')">
+          <h3>${escapeHtml(p.title)}</h3>
+          <div class="meta" style="padding-right: ${isAdmin ? '140px':'0px'}">
+            <span class="board-tag">${escapeHtml(p.board || "Genel")}</span>
+            <span>📅 ${new Date(p.created_at).toLocaleDateString('tr-TR')}</span>
+          </div>
+        </div>
+        
+        <div class="post-body">
+          <div style="font-size:11px; color:var(--muted); margin-bottom:8px;">👤 Paylaşan: ${escapeHtml(p.author)}</div>
+          <p>${escapeHtml(p.content)}</p>
+          ${p.code ? `<pre><code>${escapeHtml(p.code)}</code></pre>` : ''}
+        </div>
+
+        ${isAdmin ? `
+          <div class="mod-actions">
+            <button class="mod-btn" onclick="deleteProject('${p.id}')">🗑️ Sil</button>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+async function banUser(username) {
+  if(!currentUser || !currentUser.isAdmin) return;
+  if(confirm(`${username} isimli kullanıcıyı tamamen banlamak istiyor musunuz?`)) {
+    const { error } = await sb.from('accounts').update({ is_banned: true }).eq('username', username);
+    if(!error) { alert(`${username} başarıyla engellendi.`); await refreshPosts(); }
+  }
+}
+
+async function addComment(postId) {
+  if(!currentUser) return;
+  const { data: userCheck } = await sb.from('accounts').select('is_banned').eq('username', currentUser.username).maybeSingle();
+  if(userCheck && userCheck.is_banned) { alert('Hesabınız engellendiği için yorum yapamazsınız.'); return; }
+
+  const input = document.getElementById(`comment-in-${postId}`);
+  const content = input.value.trim();
+  if(!content) return;
+
+  await sb.from('comments').insert({ post_id: postId, author: currentUser.username, content: content });
+  input.value = '';
+}
+
+async function deleteProject(id) {
+  if(!currentUser || !currentUser.isAdmin) return;
+  if(confirm('Silmek istediğinize emin misiniz?')) {
+    const queryId = isNaN(id) ? id : Number(id);
+    await sb.from('projects').delete().eq('id', queryId);
+    await sb.from('comments').delete().eq('post_id', queryId);
+  }
+}
+
+document.getElementById('postBtn').addEventListener('click', async ()=>{
+  if(!currentUser || !currentUser.isAdmin) return;
+  const title = document.getElementById('postTitle').value.trim();
+  const content = document.getElementById('postContent').value.trim();
+  const code = document.getElementById('postCode').value.trim();
+  const board = document.getElementById('postBoard').value;
+
+  if(!title || !content) return;
+
+  await sb.from('projects').insert({ title, content, code: code || null, board, author: currentUser.username });
+  document.getElementById('postTitle').value = '';
+  document.getElementById('postContent').value = '';
+  document.getElementById('postCode').value = '';
+});
+
+document.getElementById('signupBtn').addEventListener('click', async ()=>{
+  const username = document.getElementById('suUser').value.trim();
+  const password = document.getElementById('suPass').value;
+  const wantsAdmin = document.getElementById('suAdminCheck').checked;
+  const inputAdminCode = document.getElementById('suAdminCode').value;
+
+  if(!username || !password){ flash('signupMsg', 'Boş alan bırakmayın.', false); return; }
+
+  const { data: existing } = await sb.from('accounts').select('username').eq('username', username).maybeSingle();
+  if(existing){ flash('signupMsg', 'Bu kullanıcı adı alınmış.', false); return; }
+
+  let makeAdmin = false;
+  if(wantsAdmin) {
+    const { data: setting } = await sb.from('admin_settings').select('value').eq('key', 'admin_code').maybeSingle();
+    const dbAdminCode = setting ? setting.value : null;
+
+    if(!dbAdminCode || inputAdminCode !== dbAdminCode) {
+      flash('signupMsg', 'Hatalı veya eksik admin kodu.', false);
+      return;
+    }
+    makeAdmin = true;
+  }
+
+  await sb.from('accounts').insert({ username, password, is_admin: makeAdmin });
+  currentUser = { username, isAdmin: makeAdmin };
+  localStorage.setItem('dt_user', JSON.stringify(currentUser));
+  updateWhoBar(); showTab('projeniz');
+});
+
+document.getElementById('loginBtn').addEventListener('click', async ()=>{
+  const username = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value;
+
+  const { data: acc } = await sb.from('accounts').select('*').eq('username', username).maybeSingle();
+  if(!acc || acc.password !== password){ flash('loginMsg', 'Hatalı kullanıcı adı veya şifre.', false); return; }
+  if(acc.is_banned) { flash('loginMsg', 'Bu hesap engellenmiştir!', false); return; }
+  
+  currentUser = { username, isAdmin: !!acc.is_admin };
+  localStorage.setItem('dt_user', JSON.stringify(currentUser));
+  updateWhoBar(); showTab('projeniz');
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  currentUser = null; localStorage.removeItem('dt_user'); updateWhoBar(); showTab('login');
+});
+
+function updateWhoBar(){
+  const bar = document.getElementById('whoBar');
+  const box = document.getElementById('adminPostBox');
+  const note = document.getElementById('lockedNote');
+  const gate = document.getElementById('memberGate');
+  const contentArea = document.getElementById('memberContentArea');
+  if(currentUser){
+    bar.classList.remove('hidden');
+    document.getElementById('whoName').textContent = currentUser.username;
+    document.getElementById('whoRole').textContent = currentUser.isAdmin ? 'ADMIN' : 'ÜYE';
+    if(currentUser.isAdmin){ box.classList.remove('hidden'); note.style.display = 'none'; } 
+    else { box.classList.add('hidden'); note.style.display = 'block'; }
+    gate.classList.add('hidden');
+    contentArea.classList.remove('hidden');
+  } else {
+    bar.classList.add('hidden'); box.classList.add('hidden'); note.style.display = 'none';
+    gate.classList.remove('hidden');
+    contentArea.classList.add('hidden');
+  }
+  if(sb) refreshPosts();
+}
+
+connectSupabase();
+</script>
+</body>
+</html>
