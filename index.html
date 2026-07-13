@@ -243,6 +243,125 @@
   .gatebox .gate-actions button.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--border);}
 
   .empty{color:var(--muted);font-size:13px;text-align:center;padding:36px 0;}
+  /* --- ARTIRILMIŞ EFEKTLER VE SAYDAMLIK --- */
+
+/* Arka plan bloblarını daha görünür ve canlı yapıyoruz */
+.liquid-blob {
+    filter: blur(140px); /* Bulanıklığı artırdık */
+    opacity: 0.5; /* Daha belirgin renkler */
+    mix-blend-mode: screen; /* Renklerin iç içe daha şık geçmesi için */
+    animation: drift 20s infinite alternate; /* Blobların yavaşça hareket etmesi */
+}
+
+/* Glassmorphism Etkisini Derinleştiriyoruz */
+.panel, header, .forum-post, .post {
+    /* Saydamlığı artırmak için rgba değerlerini düşürdük */
+    background: rgba(255, 255, 255, 0.03) !important; 
+    backdrop-filter: blur(40px) saturate(220%) !important; /* Bulanıklığı ve doygunluğu artırdık */
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3) !important; /* Daha derin gölge */
+}
+
+/* Hover efektlerini daha etkileyici yapıyoruz */
+.panel:hover, .forum-post:hover, .post:hover {
+    background: rgba(255, 255, 255, 0.07) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    transform: translateY(-4px) scale(1.01); /* Daha belirgin tepki */
+}
+
+/* Animasyon tanımı (sayfanın "liquid" hissini artırır) */
+@keyframes drift {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(30px, 50px); }
+}
+/* --- DERİN GÖLGELİ VE AKIŞKAN TASARIM --- */
+
+/* Arka plan blobları: Efekti artırılmış, daha belirgin ışık huzmeleri */
+.liquid-blob {
+    filter: blur(160px); 
+    opacity: 0.45;
+    z-index: -1;
+}
+
+/* Paneller ve Kartlar: Dramatik Gölgelerle Yüzdürme Etkisi */
+.panel, header, .forum-post, .post {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(35px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 20px !important;
+    
+    /* GÖLGE ARTIRIMI: Derinlik hissi için güçlü gölgeler */
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 
+                0 10px 20px rgba(0, 0, 0, 0.3) !important; 
+}
+
+/* Hover durumunda gölgeyi daha da büyüterek kartın öne çıkmasını sağla */
+.panel:hover, .forum-post:hover, .post:hover {
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6) !important;
+    transform: translateY(-8px) scale(1.005);
+}
+
+/* Header (Üst Menü): Daha belirgin bir gölge ile vurgu */
+header {
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Butonlar: Yine Apple tarzı şık bir gölge */
+button.btn, .site-btn.active {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ---- Sayfa arka planı (fotoğraf) ---- */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:url('https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+  filter:grayscale(1) contrast(1.05) brightness(.8);
+  z-index:-3;
+}
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:linear-gradient(180deg, rgba(8,10,16,.55), rgba(8,10,16,.78));
+  z-index:-2;
+}
+
+/* ---- Giriş / Kayıt kartı (referans görsele benzer beyaz kart) ---- */
+#tab-login, #tab-signup{
+  max-width:400px;margin:40px auto 0;
+}
+.auth-card{
+  background:#ffffff !important;
+  color:#1a1c22;
+  border-radius:14px !important;
+  padding:34px 32px 30px !important;
+  box-shadow:0 28px 60px -14px rgba(0,0,0,.55) !important;
+  border:1px solid rgba(255,255,255,.7) !important;
+  backdrop-filter:none !important;-webkit-backdrop-filter:none !important;
+}
+.auth-card h2{color:#1a1c22;font-size:19px;text-align:left;}
+.auth-card label{color:#3a3d47;text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:700;}
+.auth-card label .req{color:#e0a800;}
+.auth-card input[type=text],.auth-card input[type=password]{
+  background:#f5f6f9;border:1px solid #dfe2e8;color:#1a1c22;backdrop-filter:none;-webkit-backdrop-filter:none;
+}
+.auth-card input[type=text]::placeholder,.auth-card input[type=password]::placeholder{color:#9aa0ac;}
+.auth-card input[type=text]:focus,.auth-card input[type=password]:focus{
+  border-color:#e6b800;box-shadow:0 0 0 3px rgba(230,184,0,.18);
+}
+.auth-card .checkrow label{color:#4a4d57;}
+.auth-card .checkrow input{accent-color:#e6b800;}
+.auth-card button.btn{
+  width:100%;background:linear-gradient(135deg,#f6c92e,#e0a800) !important;color:#20180a;
+  box-shadow:0 10px 22px -8px rgba(224,168,0,.55) !important;font-weight:800;
+}
+.auth-card button.btn:hover{box-shadow:0 12px 26px -8px rgba(224,168,0,.7) !important;}
+.auth-card .msg.error{background:rgba(216,67,61,.08);}
+.auth-links{text-align:center;margin-top:18px;font-size:12.5px;}
+.auth-links a{color:#e0a800;text-decoration:none;font-weight:700;}
+.auth-links a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
@@ -288,22 +407,29 @@
       <button id="logoutBtn">Çıkış yap</button>
     </div>
 
-    <div class="panel tab hidden" id="tab-login">
+    <div class="panel tab hidden auth-card" id="tab-login">
       <h2>Hesabına Giriş Yap</h2>
-      <label>Kullanıcı adı</label>
-      <input type="text" id="loginUser" placeholder="kullanıcı adı">
-      <label>Şifre</label>
-      <input type="password" id="loginPass" placeholder="şifre">
-      <button class="btn" id="loginBtn">Giriş yap</button>
+      <label>Kullanıcı Adı <span class="req">*</span></label>
+      <input type="text" id="loginUser" placeholder="Kullanıcı adınızı girin">
+      <label>Şifre <span class="req">*</span></label>
+      <input type="password" id="loginPass" placeholder="Şifrenizi girin">
+      <div class="checkrow">
+        <input type="checkbox" id="loginRemember">
+        <label for="loginRemember">Beni hatırla</label>
+      </div>
+      <button class="btn" id="loginBtn">Giriş yapmak</button>
       <div class="msg" id="loginMsg"></div>
+      <div class="auth-links">
+        <a href="#" onclick="return false;">Parolanızı mı unuttunuz?</a>
+      </div>
     </div>
 
-    <div class="panel tab hidden" id="tab-signup">
+    <div class="panel tab hidden auth-card" id="tab-signup">
       <h2>Yeni Hesap Oluştur</h2>
-      <label>Kullanıcı adı</label>
-      <input type="text" id="suUser" placeholder="kullanıcı adı">
-      <label>Şifre</label>
-      <input type="password" id="suPass" placeholder="şifre">
+      <label>Kullanıcı Adı <span class="req">*</span></label>
+      <input type="text" id="suUser" placeholder="Kullanıcı adınızı girin">
+      <label>Şifre <span class="req">*</span></label>
+      <input type="password" id="suPass" placeholder="Şifrenizi girin">
       
       <div class="checkrow">
         <input type="checkbox" id="suAdminCheck">
@@ -559,8 +685,21 @@ document.getElementById('loginBtn').addEventListener('click', async ()=>{
   
   currentUser = { username, isAdmin: !!acc.is_admin };
   localStorage.setItem('dt_user', JSON.stringify(currentUser));
+  if(document.getElementById('loginRemember').checked){
+    localStorage.setItem('dt_remembered_user', username);
+  } else {
+    localStorage.removeItem('dt_remembered_user');
+  }
   updateWhoBar(); showTab('projeniz');
 });
+
+(function(){
+  const remembered = localStorage.getItem('dt_remembered_user');
+  if(remembered){
+    document.getElementById('loginUser').value = remembered;
+    document.getElementById('loginRemember').checked = true;
+  }
+})();
 
 document.getElementById('logoutBtn').addEventListener('click', () => {
   currentUser = null; localStorage.removeItem('dt_user'); updateWhoBar(); showTab('login');
